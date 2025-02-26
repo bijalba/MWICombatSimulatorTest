@@ -282,6 +282,7 @@ class CombatSimulator extends EventTarget {
     }
 
     reset() {
+        this.tempDungeonCount = 0;
         this.simulationTime = 0;
         this.eventQueue.clear();
         this.simResult = new _simResult__WEBPACK_IMPORTED_MODULE_16__["default"](this.zone.hrid, this.players.length);
