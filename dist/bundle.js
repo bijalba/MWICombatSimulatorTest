@@ -2593,8 +2593,8 @@ function sortTable(tableId, columnIndex, direction) {
     const rows = Array.from(tbody.querySelectorAll('tr'));
 
     const sortedRows = rows.sort((rowA, rowB) => {
-        const cellA = rowA.children[columnIndex].textContent.trim();
-        const cellB = rowB.children[columnIndex].textContent.trim();
+        const cellA = rowA.children[columnIndex].textContent.trim().replace(/[\s,]/g, '');
+        const cellB = rowB.children[columnIndex].textContent.trim().replace(/[\s,]/g, '');
 
         const valueA = parseFloat(cellA.replace(/,/g, '')); 
         const valueB = parseFloat(cellB.replace(/,/g, ''));
