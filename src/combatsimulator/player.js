@@ -128,7 +128,11 @@ class Player extends CombatUnit {
             "attackSpeed",
             "foodHaste",
             "drinkConcentration",
-            "autoAttackDamage"
+            "autoAttackDamage",
+            "fury",
+            "ripple",
+            "bloom",
+            "blaze"
         ].forEach((stat) => {
             this.combatDetails.combatStats[stat] = Object.values(this.equipment)
                 .filter((equipment) => equipment != null)

@@ -30,6 +30,7 @@ class Ability {
                 bonusAccuracyRatio: effect.bonusAccuracyRatio + (this.level - 1) * effect.bonusAccuracyRatioLevelBonus,
                 damageOverTimeRatio: effect.damageOverTimeRatio,
                 damageOverTimeDuration: effect.damageOverTimeDuration,
+                hpDrainRatio: effect.hpDrainRatio,
                 pierceChance: effect.pierceChance,
                 blindChance: effect.blindChance,
                 blindDuration: effect.blindDuration,
@@ -38,6 +39,7 @@ class Ability {
                 stunChance: effect.stunChance,
                 stunDuration: effect.stunDuration,
                 spendHpRatio: effect.spendHpRatio,
+                armorDamageRatio: effect.armorDamageRatio,
                 buffs: null,
             };
             if (effect.buffs) {

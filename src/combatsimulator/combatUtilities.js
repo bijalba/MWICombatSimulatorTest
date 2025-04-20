@@ -158,8 +158,9 @@ class CombatUtilities {
         let baseDamageFlat = abilityEffect ? abilityEffect.damageFlat : 0;
         let baseDamageRatio = abilityEffect ? abilityEffect.damageRatio : 1;
 
-        let sourceMinDamage = sourceDamageMultiplier * (1 + baseDamageFlat);
-        let sourceMaxDamage = sourceDamageMultiplier * (baseDamageRatio * sourceAutoAttackMaxDamage + baseDamageFlat);
+        let armorDamageRatioFlat = abilityEffect ? abilityEffect.armorDamageRatio * source.combatDetails.totalArmor : 0;
+        let sourceMinDamage = sourceDamageMultiplier * (1 + baseDamageFlat + armorDamageRatioFlat);
+        let sourceMaxDamage = sourceDamageMultiplier * (baseDamageRatio * sourceAutoAttackMaxDamage + baseDamageFlat + armorDamageRatioFlat);
 
         if (Math.random() < critChance) {
             sourceMaxDamage = sourceMaxDamage * (1 + bonusCritDamage);
@@ -193,8 +194,12 @@ class CombatUtilities {
                 targetDamageTakenRatio = (100 - penetratedTargetResistance) / 100;
             }
 
-            let mitigatedDamage = Math.ceil(targetDamageTakenRatio * damageRoll);
-            damageDone = Math.min(mitigatedDamage, target.combatDetails.currentHitpoints);
+            let mitigatedDamage = targetDamageTakenRatio * damageRoll;
+            let targetDamageTakenBoost = target.getBuffBoost("/buff_types/damage_taken");
+            let finalDamageToTarget = Math.max(0, mitigatedDamage * (1 + targetDamageTakenBoost.ratioBoost) + targetDamageTakenBoost.flatBoost);
+            finalDamageToTarget = Math.ceil(finalDamageToTarget); 
+
+            damageDone = Math.min(finalDamageToTarget, target.combatDetails.currentHitpoints);
             target.combatDetails.currentHitpoints -= damageDone;
         }
 
@@ -210,9 +215,13 @@ class CombatUtilities {
                 sourceDamageTakenRatio = (100 - penetratedSourceResistance) / 100;
             }
 
-            reflectDamage = Math.ceil(targetThornPower * targetResistance);
-            mitigatedReflectDamage = Math.ceil(sourceDamageTakenRatio * reflectDamage);
-            reflectDamageDone = Math.min(mitigatedReflectDamage, source.combatDetails.currentHitpoints);
+            reflectDamage = targetThornPower * targetResistance;
+            mitigatedReflectDamage = reflectDamage * sourceDamageTakenRatio; 
+
+            let sourceDamageTakenBoost = source.getBuffBoost("/buff_types/damage_taken");
+            let finalReflectDamageToSource = Math.max(0, mitigatedReflectDamage * (1 + sourceDamageTakenBoost.ratioBoost) + sourceDamageTakenBoost.flatBoost);
+            finalReflectDamageToSource = Math.ceil(finalReflectDamageToSource);
+            reflectDamageDone = Math.min(finalReflectDamageToSource, source.combatDetails.currentHitpoints);
             source.combatDetails.currentHitpoints -= reflectDamageDone;
         }
 

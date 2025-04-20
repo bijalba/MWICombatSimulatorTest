@@ -368,7 +368,11 @@ function updateCombatStatsUI() {
         "weaken",
         "attackSpeed",
         "drinkConcentration",
-        "foodHaste"
+        "foodHaste",
+        "fury",
+        "ripple",
+        "bloom",
+        "blaze",
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         let value = (100 * player.combatDetails.combatStats[stat]).toLocaleString([], {
@@ -1573,6 +1577,9 @@ function showHitpointsGained(simResult, playerToDisplay) {
             case "lifesteal":
                 sourceText = "Life Steal";
                 break;
+            case "Ripple":
+                sourceText = "Ripple";
+                break;
             default:
                 if (itemDetailMap[source]) {
                     sourceText = itemDetailMap[source].name;
@@ -1822,6 +1829,9 @@ function createDamageTable(resultDiv, damageDone, secondsSimulated) {
                 break;
             case "elementalThorns":
                 abilityText = "Elemental Thorns";
+                break;
+            case "Blaze":
+                abilityText = "Blaze";
                 break;
             default:
                 abilityText = abilityDetailMap[ability].name;

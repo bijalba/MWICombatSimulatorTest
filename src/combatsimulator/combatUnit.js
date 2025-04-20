@@ -6,10 +6,15 @@ class CombatUnit {
     blindExpireTime = null;
     isSilenced = false;
     silenceExpireTime = null;
+    isCursed = false;
+    cursePercentage = 0;
     curseExpiretime = null;
     isWeakened = false;
     weakenExpireTime = null;
     weakenPercentage = 0;
+    hasFury = false;
+    furyExpireTime = null;
+    furyPercentage = 0;
 
     // Base levels which don't change after initialization
     staminaLevel = 1;
@@ -123,7 +128,11 @@ class CombatUnit {
             foodHaste: 0,
             drinkConcentration: 0,
             damageTaken: 0,
-            attackSpeed: 0
+            attackSpeed: 0,
+            fury: 0,
+            ripple: 0,
+            bloom: 0,
+            blaze: 0
         },
     };
     combatBuffs = {};
@@ -167,11 +176,11 @@ class CombatUnit {
             this.combatDetails[style + "AccuracyRating"] =
                 (10 + this.combatDetails.attackLevel) *
                 (1 + this.combatDetails.combatStats[style + "Accuracy"]) *
-                (1 + accuracyRatioBoost);
+                (1 + accuracyRatioBoost) * (1 + this.furyPercentage);
             this.combatDetails[style + "MaxDamage"] =
                 (10 + this.combatDetails.powerLevel) *
                 (1 + this.combatDetails.combatStats[style + "Damage"]) *
-                (1 + damageRatioBoost);
+                (1 + damageRatioBoost) * (1 + this.furyPercentage);
             let baseEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats[style + "Evasion"]);
             this.combatDetails[style + "EvasionRating"] = baseEvasion;
             let evasionBoosts = this.getBuffBoosts("/buff_types/evasion");
@@ -184,11 +193,11 @@ class CombatUnit {
         this.combatDetails.rangedAccuracyRating =
             (10 + this.combatDetails.rangedLevel) *
             (1 + this.combatDetails.combatStats.rangedAccuracy) *
-            (1 + accuracyRatioBoost);
+            (1 + accuracyRatioBoost) * (1 + this.furyPercentage);
         this.combatDetails.rangedMaxDamage =
             (10 + this.combatDetails.rangedLevel) *
             (1 + this.combatDetails.combatStats.rangedDamage) *
-            (1 + damageRatioBoost);
+            (1 + damageRatioBoost) * (1 + this.furyPercentage);
 
         let baseRangedEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.rangedEvasion);
         this.combatDetails.rangedEvasionRating = baseRangedEvasion;
@@ -201,11 +210,11 @@ class CombatUnit {
         this.combatDetails.magicAccuracyRating =
             (10 + this.combatDetails.magicLevel) *
             (1 + this.combatDetails.combatStats.magicAccuracy) *
-            (1 + accuracyRatioBoost);
+            (1 + accuracyRatioBoost) * (1 + this.furyPercentage);
         this.combatDetails.magicMaxDamage =
             (10 + this.combatDetails.magicLevel) *
             (1 + this.combatDetails.combatStats.magicDamage) *
-            (1 + damageRatioBoost);
+            (1 + damageRatioBoost) * (1 + this.furyPercentage);
 
         let baseMagicEvasion = (10 + (this.combatDetails.defenseLevel * 0.75 + this.combatDetails.rangedLevel * 0.25)) * (1 + this.combatDetails.combatStats.magicEvasion);
         this.combatDetails.magicEvasionRating = baseMagicEvasion;
@@ -359,7 +368,15 @@ class CombatUnit {
         this.isBlinded = false;
         this.blindExpireTime = null;
         this.combatDetails.combatStats.damageTaken = 0;
+        this.isCursed = false;
         this.curseExpireTime = null;
+        this.cursePercentage = 0;
+        this.isWeakened = false;
+        this.weakenExpireTime = null;
+        this.weakenPercentage = 0;
+        this.hasFury = false;
+        this.furyExpireTime = null;
+        this.furyPercentage = 0;
     }
 
     getBuffBoosts(type) {

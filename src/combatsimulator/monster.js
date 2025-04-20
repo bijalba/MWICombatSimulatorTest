@@ -112,7 +112,11 @@ class Monster extends CombatUnit {
                     "attackSpeed",
                     "foodHaste",
                     "drinkConcentration",
-                    "autoAttackDamage"
+                    "autoAttackDamage",
+                    "fury",
+                    "ripple",
+                    "bloom",
+                    "blaze"
                 ].forEach((stat) => {
                     if (gameMonster.combatDetails.combatStats[stat] == null) {
                         this.combatDetails.combatStats[stat] = 0;
@@ -192,7 +196,11 @@ class Monster extends CombatUnit {
                     "attackSpeed",
                     "foodHaste",
                     "drinkConcentration",
-                    "autoAttackDamage"
+                    "autoAttackDamage",
+                    "fury",
+                    "ripple",
+                    "bloom",
+                    "blaze"
                 ].forEach((stat) => {
                     if (gameMonster.combatDetails.combatStats[stat] == null) {
                         this.combatDetails.combatStats[stat] = 0;
@@ -272,7 +280,11 @@ class Monster extends CombatUnit {
                     "attackSpeed",
                     "foodHaste",
                     "drinkConcentration",
-                    "autoAttackDamage"
+                    "autoAttackDamage",
+                    "fury",
+                    "ripple",
+                    "bloom",
+                    "blaze"
                 ].forEach((stat) => {
                     if (gameMonster.combatDetails.combatStats[stat] == null) {
                         this.combatDetails.combatStats[stat] = 0;
