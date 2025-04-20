@@ -1102,17 +1102,17 @@ class CombatSimulator extends EventTarget {
         return true;
     }
 
-    processRippleEffect(source) {
+    processBloomEffect(source) {
         const ability = {};
-        ability.hrid = "Ripple";
+        ability.hrid = "Bloom";
 
         const abilityEffect = {
             targetType: "lowestHpAlly",
             effectType: "/ability_effect_types/heal",
             combatStyleHrid: "/combat_styles/magic",
             damageType: "/damage_types/nature",
-            damageFlat: 0,
-            damageRatio: 0.3,
+            damageFlat: 10,
+            damageRatio: 0.15,
             bonusAccuracyRatio: 0,
             damageOverTimeRatio: 0,
             damageOverTimeDuration: 0,
@@ -1162,7 +1162,7 @@ class CombatSimulator extends EventTarget {
         this.processAbilityDamageEffect(source, ability, abilityEffect);
     }
 
-    processBloomEffect(source) {
+    processRippleEffect(source) {
         const reductionAmount = 2 * ONE_SECOND;
         source.abilities
             .filter((ability) => ability != null)

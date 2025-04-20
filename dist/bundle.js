@@ -3089,8 +3089,8 @@ function showHitpointsGained(simResult, playerToDisplay) {
             case "lifesteal":
                 sourceText = "Life Steal";
                 break;
-            case "Ripple":
-                sourceText = "Ripple";
+            case "Bloom":
+                sourceText = "Bloom";
                 break;
             default:
                 if (_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[source]) {

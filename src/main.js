@@ -1577,8 +1577,8 @@ function showHitpointsGained(simResult, playerToDisplay) {
             case "lifesteal":
                 sourceText = "Life Steal";
                 break;
-            case "Ripple":
-                sourceText = "Ripple";
+            case "Bloom":
+                sourceText = "Bloom";
                 break;
             default:
                 if (itemDetailMap[source]) {
