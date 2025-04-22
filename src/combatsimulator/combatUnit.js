@@ -8,7 +8,7 @@ class CombatUnit {
     silenceExpireTime = null;
     isCursed = false;
     cursePercentage = 0;
-    curseExpiretime = null;
+    curseExpireTime = null;
     isWeakened = false;
     weakenExpireTime = null;
     weakenPercentage = 0;

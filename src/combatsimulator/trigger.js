@@ -148,8 +148,6 @@ class Trigger {
             case "/combat_trigger_conditions/arcane_reflection":
             case "/combat_trigger_conditions/maim":
             case "/combat_trigger_conditions/fracturing_impact":
-            case "/combat_trigger_conditions/fury_accuracy":
-            case "/combat_trigger_conditions/fury_damage":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
@@ -171,7 +169,8 @@ class Trigger {
                 return source.isSilenced || source.silenceExpireTime == currentTime;
             case "/combat_trigger_conditions/curse":
                 return source.isCursed || source.curseExpireTime == currentTime;
-            case "/combat_trigger_conditions/fury":
+                case "/combat_trigger_conditions/fury_accuracy":
+                case "/combat_trigger_conditions/fury_damage":
                 return source.hasFury || source.furyExpireTime == currentTime;
             case "/combat_trigger_conditions/weaken":
                 return source.isWeakened || source.weakenExpireTime == currentTime;

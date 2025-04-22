@@ -467,16 +467,6 @@ class CombatSimulator extends EventTarget {
 
             let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
 
-            if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
-                target.curseExpireTime = this.simulationTime + 15000000000;
-                if (target.combatDetails.combatStats.damageTaken < 0.1) {
-                    target.combatDetails.combatStats.damageTaken += 0.01;
-                }
-                this.eventQueue.clearMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target)
-                let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](target.curseExpireTime, target);
-                this.eventQueue.addEvent(curseExpirationEvent);
-            }
-
             if (target.combatDetails.combatStats.weaken > 0) {
                 source.isWeakened = true;
                 source.weakenExpireTime = this.simulationTime + 15000000000;
@@ -526,7 +516,7 @@ class CombatSimulator extends EventTarget {
                 if (currentCurseEvent)
                     curseAmount = currentCurseEvent.curseAmount;
                 this.eventQueue.clearMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target);
-                let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](starget.curseExpireTime, curseAmount, target);
+                let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](target.curseExpireTime, curseAmount, target);
                 target.cursePercentage = curseExpirationEvent.curseAmount * 2 / 100;
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
@@ -1340,7 +1330,7 @@ class CombatSimulator extends EventTarget {
                     if (currentCurseEvent)
                         curseAmount = currentCurseEvent.curseAmount;
                     this.eventQueue.clearMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target);
-                    let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](starget.curseExpireTime, curseAmount, target);
+                    let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](target.curseExpireTime, curseAmount, target);
                     target.cursePercentage = curseExpirationEvent.curseAmount * 2 / 100;
                     this.eventQueue.addEvent(curseExpirationEvent);
                 }
@@ -1520,7 +1510,7 @@ class CombatUnit {
     silenceExpireTime = null;
     isCursed = false;
     cursePercentage = 0;
-    curseExpiretime = null;
+    curseExpireTime = null;
     isWeakened = false;
     weakenExpireTime = null;
     weakenPercentage = 0;
@@ -4037,8 +4027,6 @@ class Trigger {
             case "/combat_trigger_conditions/arcane_reflection":
             case "/combat_trigger_conditions/maim":
             case "/combat_trigger_conditions/fracturing_impact":
-            case "/combat_trigger_conditions/fury_accuracy":
-            case "/combat_trigger_conditions/fury_damage":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
@@ -4060,7 +4048,8 @@ class Trigger {
                 return source.isSilenced || source.silenceExpireTime == currentTime;
             case "/combat_trigger_conditions/curse":
                 return source.isCursed || source.curseExpireTime == currentTime;
-            case "/combat_trigger_conditions/fury":
+                case "/combat_trigger_conditions/fury_accuracy":
+                case "/combat_trigger_conditions/fury_damage":
                 return source.hasFury || source.furyExpireTime == currentTime;
             case "/combat_trigger_conditions/weaken":
                 return source.isWeakened || source.weakenExpireTime == currentTime;

@@ -275,16 +275,6 @@ class CombatSimulator extends EventTarget {
 
             let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
 
-            if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
-                target.curseExpireTime = this.simulationTime + 15000000000;
-                if (target.combatDetails.combatStats.damageTaken < 0.1) {
-                    target.combatDetails.combatStats.damageTaken += 0.01;
-                }
-                this.eventQueue.clearMatching((event) => event.type == CurseExpirationEvent.type && event.source == target)
-                let curseExpirationEvent = new CurseExpirationEvent(target.curseExpireTime, target);
-                this.eventQueue.addEvent(curseExpirationEvent);
-            }
-
             if (target.combatDetails.combatStats.weaken > 0) {
                 source.isWeakened = true;
                 source.weakenExpireTime = this.simulationTime + 15000000000;
@@ -334,7 +324,7 @@ class CombatSimulator extends EventTarget {
                 if (currentCurseEvent)
                     curseAmount = currentCurseEvent.curseAmount;
                 this.eventQueue.clearMatching((event) => event.type == CurseExpirationEvent.type && event.source == target);
-                let curseExpirationEvent = new CurseExpirationEvent(starget.curseExpireTime, curseAmount, target);
+                let curseExpirationEvent = new CurseExpirationEvent(target.curseExpireTime, curseAmount, target);
                 target.cursePercentage = curseExpirationEvent.curseAmount * 2 / 100;
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
@@ -1148,7 +1138,7 @@ class CombatSimulator extends EventTarget {
                     if (currentCurseEvent)
                         curseAmount = currentCurseEvent.curseAmount;
                     this.eventQueue.clearMatching((event) => event.type == CurseExpirationEvent.type && event.source == target);
-                    let curseExpirationEvent = new CurseExpirationEvent(starget.curseExpireTime, curseAmount, target);
+                    let curseExpirationEvent = new CurseExpirationEvent(target.curseExpireTime, curseAmount, target);
                     target.cursePercentage = curseExpirationEvent.curseAmount * 2 / 100;
                     this.eventQueue.addEvent(curseExpirationEvent);
                 }
