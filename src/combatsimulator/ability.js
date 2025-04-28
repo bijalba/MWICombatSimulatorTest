@@ -39,7 +39,7 @@ class Ability {
                 stunChance: effect.stunChance,
                 stunDuration: effect.stunDuration,
                 spendHpRatio: effect.spendHpRatio,
-                armorDamageRatio: effect.armorDamageRatio,
+                armorDamageRatio: effect.armorDamageRatio + (this.level - 1) * effect.armorDamageRatioLevelBonus,
                 buffs: null,
             };
             if (effect.buffs) {

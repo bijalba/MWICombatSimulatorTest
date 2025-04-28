@@ -8,11 +8,12 @@ class Zone {
         let gameZone = actionDetailMap[this.hrid];
         this.monsterSpawnInfo = gameZone.combatZoneInfo.fightInfo;
         this.dungeonSpawnInfo = gameZone.combatZoneInfo.dungeonInfo;
-        this.encountersKilled = 0;
+        this.encountersKilled = 1;
         this.monsterSpawnInfo.battlesPerBoss = 10;
         this.buffs = gameZone.buffs;
         this.isDungeon = gameZone.combatZoneInfo.isDungeon;
         this.dungeonsCompleted = 0;
+        this.dungeonsFailed = 0;
         this.finalWave = false;
     }
 
@@ -50,10 +51,15 @@ class Zone {
         return encounterHrids.map((hrid) => new Monster(hrid.hrid, hrid.eliteTier));
     }
 
+    failWave() {
+        this.dungeonsFailed++;
+        this.encountersKilled = 1;
+    }
+
     getNextWave() {
         if(this.encountersKilled > this.dungeonSpawnInfo.maxWaves) {
             this.dungeonsCompleted++;
-            this.encountersKilled = 0;
+            this.encountersKilled = 1;
         }
         if (this.dungeonSpawnInfo.fixedSpawnsMap.hasOwnProperty(this.encountersKilled.toString())) {
             let currentMonsters = this.dungeonSpawnInfo.fixedSpawnsMap[(this.encountersKilled).toString()];

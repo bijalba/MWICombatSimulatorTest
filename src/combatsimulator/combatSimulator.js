@@ -22,10 +22,12 @@ import Monster from "./monster";
 
 const ONE_SECOND = 1e9;
 const HOT_TICK_INTERVAL = 5 * ONE_SECOND;
-const DOT_TICK_INTERVAL = 5 * ONE_SECOND;
+const DOT_TICK_INTERVAL = 3 * ONE_SECOND;
 const REGEN_TICK_INTERVAL = 10 * ONE_SECOND;
 const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
+const RESTART_INTERVAL = 15 * ONE_SECOND;
+
 let tempDungeonCount = 0;
 
 class CombatSimulator extends EventTarget {
@@ -60,26 +62,48 @@ class CombatSimulator extends EventTarget {
             }
         }
 
-        for (let i = 0; i < this.simResult.timeSpentAlive.length; i++) {
-            if (this.simResult.timeSpentAlive[i].alive == true) {
-                this.simResult.updateTimeSpentAlive(this.simResult.timeSpentAlive[i].name, false, simulationTimeLimit);
-            }
-        }
+        // no need to finish last fight
+        // for (let i = 0; i < this.simResult.timeSpentAlive.length; i++) {
+        //     if (this.simResult.timeSpentAlive[i].alive == true) {
+        //         this.simResult.updateTimeSpentAlive(this.simResult.timeSpentAlive[i].name, false, simulationTimeLimit);
+        //     }
+        // }
+
         this.simResult.isDungeon = this.zone.isDungeon;
         if(this.simResult.isDungeon) {
             this.simResult.dungeonsCompleted = this.zone.dungeonsCompleted;
-            if(this.simResult.dungeonsCompleted < 1) {
-                this.simResult.maxWaveReached = this.zone.encountersKilled - 1;
+            this.simResult.dungeonsFailed = this.zone.dungeonsFailed;
+            if (this.simResult.dungeonsCompleted < 1) {
+                this.simResult.maxWaveReached = 0;
+                for (let i = 0; i <= this.zone.dungeonSpawnInfo.maxWaves; i++) {
+                    let waveName = "#" + i.toString();
+                    const idx = this.simResult.timeSpentAlive.findIndex(e => e.name === waveName);
+                    if (idx == -1 || this.simResult.timeSpentAlive[idx].count == 0) {
+                        break;
+                    }
+                    this.simResult.maxWaveReached = i;
+                }
             } else {
                 this.simResult.maxWaveReached = this.zone.dungeonSpawnInfo.maxWaves;
             }
         }
         this.simResult.simulatedTime = this.simulationTime;
-        this.simResult.setDropRateMultipliers(this.players[0]);
-        for(let i = 0; i < this.players.length; i++) {
+        
+        for (let i = 0; i < this.players.length; i++) {
+            this.simResult.setDropRateMultipliers(this.players[i]);
             this.simResult.setManaUsed(this.players[i]);
         }
 
+        if (this.zone.isDungeon) {
+            Object.entries(this.zone.dungeonSpawnInfo.fixedSpawnsMap).forEach(([wave, monsters]) => {
+                let waveName = "#" + wave.toString();
+                monsters.forEach(monster => {
+                    waveName += ',' + monster.combatMonsterHrid;
+                });
+                this.simResult.bossSpawns.push(waveName);
+            });
+        }
+        
         if (this.zone.monsterSpawnInfo.bossSpawns) {
             for (const boss of this.zone.monsterSpawnInfo.bossSpawns) {
                 this.simResult.bossSpawns.push(boss.combatMonsterHrid);
@@ -164,8 +188,11 @@ class CombatSimulator extends EventTarget {
     }
 
     processCombatStartEvent(event) {
-        for(let i = 0; i < this.players.length; i++) {
-            this.players[i].generatePermanentBuffs();
+        // console.log("Combat Start " + (this.simulationTime / 1000000000));
+        for (let i = 0; i < this.players.length; i++) {
+            if (event.time == 0) { // First combat start event
+                this.players[i].generatePermanentBuffs();
+            }
             this.players[i].reset(this.simulationTime);
         }
         let regenTickEvent = new RegenTickEvent(this.simulationTime + REGEN_TICK_INTERVAL);
@@ -193,10 +220,16 @@ class CombatSimulator extends EventTarget {
     }
 
     startNewEncounter() {
+        if (this.allPlayersDead) {
+            this.allPlayersDead = false;
+            this.zone.failWave();
+        }
+
         if(!this.zone.isDungeon) {
             this.enemies = this.zone.getRandomEncounter();
         } else {
             this.enemies = this.zone.getNextWave();
+            this.simResult.updateTimeSpentAlive("#" + (this.zone.encountersKilled - 1).toString(), true, this.simulationTime);
             let currentDungeonCount = this.zone.dungeonsCompleted;
             if(currentDungeonCount > tempDungeonCount) {
                 tempDungeonCount = currentDungeonCount;
@@ -410,6 +443,9 @@ class CombatSimulator extends EventTarget {
             this.eventQueue.addEvent(enemyRespawnEvent);
             this.enemies = null;
 
+            if (this.zone.isDungeon) {
+                this.simResult.updateTimeSpentAlive("#" + (this.zone.encountersKilled - 1).toString(), false, this.simulationTime);
+            }
             this.simResult.addEncounterEnd();
             // console.log("All enemies died");
 
@@ -417,20 +453,32 @@ class CombatSimulator extends EventTarget {
             // console.log("encounter end " + (this.simulationTime / 1000000000))
         }
 
-    this.players.forEach(player => {
-        if ((player.combatDetails.currentHitpoints <= 0) && !this.eventQueue.containsEventOfTypeAndHrid(PlayerRespawnEvent.type, player.hrid)) {
-            let playerRespawnEvent = new PlayerRespawnEvent(this.simulationTime + PLAYER_RESPAWN_INTERVAL, player.hrid);
-            this.eventQueue.addEvent(playerRespawnEvent);
-            //console.log(player.hrid + " died at " + (this.simulationTime / 1000000000));
-        }
-    });
+        this.players.forEach(player => {
+            if ((player.combatDetails.currentHitpoints <= 0) && !this.eventQueue.containsEventOfTypeAndHrid(PlayerRespawnEvent.type, player.hrid)) {
+                if (!this.zone.isDungeon) { // in dungeon auto respwan not work
+                    let playerRespawnEvent = new PlayerRespawnEvent(this.simulationTime + PLAYER_RESPAWN_INTERVAL, player.hrid);
+                    this.eventQueue.addEvent(playerRespawnEvent);
+                }
+                // console.log(player.hrid + " died at " + (this.simulationTime / 1000000000));
+            }
+        });
 
         if (
             !this.players.some((player) => player.combatDetails.currentHitpoints > 0)
         ) {
-            this.eventQueue.clearEventsOfType(AutoAttackEvent.type);
-            this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
-            //console.log("All Players died");
+            if (this.zone.isDungeon) {
+                //console.log("All Players died at wave #" + (this.zone.encountersKilled - 1) + " with ememies: " + this.enemies.map(enemy => (enemy.hrid+"("+(enemy.combatDetails.currentHitpoints*100/enemy.combatDetails.maxHitpoints).toFixed(2)+"%)")).join(", "));
+
+                this.eventQueue.clear();
+                this.enemies = null;
+
+                let combatStartEvent = new CombatStartEvent(this.simulationTime + RESTART_INTERVAL);
+                this.eventQueue.addEvent(combatStartEvent);
+            } else {
+                this.eventQueue.clearEventsOfType(AutoAttackEvent.type);
+                this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
+            }
+            // console.log("All Players died");
             encounterEnded = true;
             this.allPlayersDead = true;
         } 
@@ -834,16 +882,6 @@ class CombatSimulator extends EventTarget {
             cooldownDuration = cooldownDuration * 100 / (100 + haste);
         }
 
-        let chance = Math.random();
-        if(source.combatDetails.combatStats.bloom > 0 && chance <= source.combatDetails.combatStats.bloom) {
-            this.processBloomEffect(source);
-        }
-        if(source.combatDetails.combatStats.ripple > 0 && chance <= source.combatDetails.combatStats.ripple) {
-            this.processRippleEffect(source);
-        }
-        if(source.combatDetails.combatStats.blaze > 0 && chance <= source.combatDetails.combatStats.blaze) {
-            this.processBlazeEffect(source);
-        }
         /*-if (source.isPlayer) {
             let castDuration = ability.castDuration;
             castDuration /= (1 + source.combatDetails.combatStats.castSpeed)
@@ -885,6 +923,17 @@ class CombatSimulator extends EventTarget {
                 }
             }
 
+            let chance = Math.random();
+            if(source.combatDetails.combatStats.bloom > 0 && chance <= source.combatDetails.combatStats.bloom) {
+                this.processBloomEffect(source);
+            }
+            if(source.combatDetails.combatStats.ripple > 0 && chance <= source.combatDetails.combatStats.ripple) {
+                this.processRippleEffect(source);
+            }
+            if(source.combatDetails.combatStats.blaze > 0 && chance <= source.combatDetails.combatStats.blaze) {
+                this.processBlazeEffect(source);
+            }
+            
             // Could die from reflect damage
             if (source.combatDetails.currentHitpoints == 0) {
                 this.eventQueue.clearEventsForUnit(source);

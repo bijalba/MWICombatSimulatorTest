@@ -7,13 +7,14 @@ class SimResult {
         this.consumablesUsed = {};
         this.hitpointsGained = {};
         this.manapointsGained = {};
-        this.dropRateMultiplier = 1;
-        this.rareFindMultiplier = 1;
-        this.playerRanOutOfMana = {"player1" : false,
-                                   "player2" : false,
-                                   "player3" : false,
-                                   "player4" : false,
-                                   "player5" : false
+        this.dropRateMultiplier = {};
+        this.rareFindMultiplier = {};
+        this.playerRanOutOfMana = {
+            "player1" : false,
+            "player2" : false,
+            "player3" : false,
+            "player4" : false,
+            "player5" : false
         };
         this.manaUsed = {};
         this.timeSpentAlive = [];
@@ -23,6 +24,7 @@ class SimResult {
         this.zoneName = zoneName;
         this.isDungeon = false;
         this.dungeonsCompleted = 0;
+        this.dungeonsFailed = 0;
         this.maxWaveReached = 0;
         this.numberOfPlayers = numberOfPlayers;
     }
@@ -42,12 +44,13 @@ class SimResult {
                 this.timeSpentAlive[i].alive = true;
                 this.timeSpentAlive[i].spawnedAt = time;
             } else {
-                this.timeSpentAlive.push({ name: name, timeSpentAlive: 0, spawnedAt: time, alive: true });
+                this.timeSpentAlive.push({ name: name, timeSpentAlive: 0, spawnedAt: time, alive: true, count: 0 });
             }
         } else {
             const timeAlive = time - this.timeSpentAlive[i].spawnedAt;
             this.timeSpentAlive[i].alive = false;
             this.timeSpentAlive[i].timeSpentAlive += timeAlive;
+            this.timeSpentAlive[i].count += 1;
         }
     }
 
@@ -127,8 +130,14 @@ class SimResult {
     }
 
     setDropRateMultipliers(unit) {
-        this.dropRateMultiplier = 1 + unit.combatDetails.combatStats.combatDropRate;
-        this.rareFindMultiplier = 1 + unit.combatDetails.combatStats.combatRareFind;
+        if (!this.dropRateMultiplier[unit.hrid]) {
+            this.dropRateMultiplier[unit.hrid] = {};
+        }
+        this.dropRateMultiplier[unit.hrid] = 1 + unit.combatDetails.combatStats.combatDropRate;
+        if (!this.rareFindMultiplier[unit.hrid]) {
+            this.rareFindMultiplier[unit.hrid] = {};
+        }
+        this.rareFindMultiplier[unit.hrid] = 1 + unit.combatDetails.combatStats.combatRareFind;
     }
 
     setManaUsed(unit) {
